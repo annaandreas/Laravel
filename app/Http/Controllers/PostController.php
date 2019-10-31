@@ -14,7 +14,7 @@ class PostController extends Controller
      */
     public function index()
     {
-        $posts=Post::all();
+        $posts=Post::with('user')->get;
         return $posts;
 
     }
@@ -27,8 +27,19 @@ class PostController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $post = new Post();
+        if($request->has('title')&& $request->has('body')) {
+            $post->title = $request->input('title');
+            $post->body = $request->input('body');
+            $post->user_id = 1;
+            $post->save();
+            return $post;
+        }
+        return response()->json(['error'=>'invalid parameters provided'], 400);
+
+
     }
+
 
     /**
      * Display the specified resource.
@@ -38,7 +49,8 @@ class PostController extends Controller
      */
     public function show(Post $post)
     {
-        //
+
+        return $post->load('user');
     }
 
     /**
@@ -50,7 +62,18 @@ class PostController extends Controller
      */
     public function update(Request $request, Post $post)
     {
-        //
+        if ($request->has('title')) {
+            $post->title = $request->input('title');
+
+        }
+        if ($request->has('body')) {
+            $post->body = $request->input('body');
+        }
+    if($post->isDirty()){
+        $post->save();
+    }
+    return $post;
+
     }
 
     /**
@@ -61,6 +84,7 @@ class PostController extends Controller
      */
     public function destroy(Post $post)
     {
-        //
+        $post->delete();
+        return response()->json(['status'=>'OK']);
     }
 }
